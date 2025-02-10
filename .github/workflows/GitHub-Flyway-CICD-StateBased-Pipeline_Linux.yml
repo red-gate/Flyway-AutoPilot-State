@@ -13,7 +13,7 @@ on:
 env:
 
   # Enable this for additional debug logging
-  ACTIONS_RUNNER_DEBUG: false
+  ACTIONS_RUNNER_DEBUG: true
 
   ### Step 1: Define Environment Secrets ###
   ### Environment Secrets - Create Environment Secrets ###
