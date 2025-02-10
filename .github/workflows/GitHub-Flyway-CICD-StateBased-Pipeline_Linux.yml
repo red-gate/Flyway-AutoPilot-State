@@ -59,6 +59,9 @@ jobs:
       displayName: 'Build'
       DATABASE_NAME: 'AutoPilotBuild'
       ENVIRONMENT: 'Build' # This variable refers to the environment name present in the Flyway Projects TOML file. 
+      SOURCE_ENVIRONMENT: "schemaModel"
+      TARGET_ENVIRONMENT: "Build"
+      SCRIPT_FILENAME: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -76,4 +79,66 @@ jobs:
         if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
-           # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
+      # Step 2 - Prepare: Detect differences and create deployment script
+      - name: Flyway CLI - Prepare Scripts
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
+        run: |
+          # Run Flyway prepare command and capture output
+            echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
+              flywayDiffs=$(flyway prepare \
+                -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
+                -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+                -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                -prepare.force="true" \
+                -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+                -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
+                 ${{ env.CUSTOM_PARAMS }}) 2>&1)
+
+              # Capture exit code
+              EXIT_CODE=$?
+
+              # Display output in console
+              echo "$flywayDiffs"
+
+              if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
+                  echo "No changes to generate. Exiting script gracefully."
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_OUTPUT"
+                  exit 0
+                elif [[ $EXIT_CODE -eq 0 ]]; then
+                  echo "Changes detected. Proceeding with further steps."
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_OUTPUT"
+                else
+                  echo "Error: The flyway prepare command failed. Exiting script with error."
+                  exit 1
+                fi
+      # Step 3 - Deploy: Deploy changes to target environment
+      - name: Flyway CLI - Deploy Changes
+        if: ${{ env.EXECUTE_BUILD == 'true' && env.CHANGES_DETECTED == 'true' && success() }}
+        run: |
+            echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
+              flyway deploy \
+                -environment="${{ env.TARGET_ENVIRONMENT }}" \
+                -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                ${{ env.CUSTOM_PARAMS }}
+      # GitHub - After migration scripts are validated, publish them as an artifact
+      - name: Publish Validated Migration Scripts as Artifact
+        if: ${{ env.publishArtifacts == 'true' && success() }}
+        uses: actions/upload-artifact@v4
+        with: 
+          name: flyway-build-artifact-${{ github.run_number }}
+          path: |
+              !${{ GITHUB.WORKSPACE }}/flyway-*/**/*
+              !${{ GITHUB.WORKSPACE }}/.git/**/*
+              !${{ GITHUB.WORKSPACE }}/.git*/**/*
+              ${{ GITHUB.WORKSPACE }}/**/schema-model/**/*
+              ${{ GITHUB.WORKSPACE }}/**/migrations/**/*
+              ${{ GITHUB.WORKSPACE }}/**/Scripts/**/*
+              ${{ GITHUB.WORKSPACE }}/**/backups/**/*
+              ${{ GITHUB.WORKSPACE }}/**/flyway.toml
+              ${{ GITHUB.WORKSPACE }}/**/Filter.scpf
