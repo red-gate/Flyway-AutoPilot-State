@@ -94,7 +94,7 @@ jobs:
                 -prepare.force="true" \
                 -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
                 -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
-                 ${{ env.CUSTOM_PARAMS }}) 2>&1)
+                 ${{ env.CUSTOM_PARAMS }} 2>&1)
 
               # Capture exit code
               EXIT_CODE=$?
