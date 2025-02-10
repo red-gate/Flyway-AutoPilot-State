@@ -130,7 +130,7 @@ stages:
                 -prepare.force="true" \
                 -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
                 -schemaModelLocation="$(WORKING_DIRECTORY)/schema-model" \
-                 $(CUSTOM_PARAMS) 2>&1)
+                 $(CUSTOM_PARAMETERS) 2>&1)
 
               # Capture exit code
               EXIT_CODE=$?
@@ -169,7 +169,7 @@ stages:
                 -environments.Build.user="$(TARGET_DATABASE_USERNAME)" \
                 -environments.Build.password="$(TARGET_DATABASE_PASSWORD)" \
                 -deploy.scriptFilename="$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
-                $(CUSTOM_PARAMS)
+                $(CUSTOM_PARAMETERS)
 
         # ADO - Copy in-scope build files to artifact directory 
         - task: CopyFiles@2
@@ -270,7 +270,7 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
                 -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
-                $(CUSTOM_PARAMS) 2>&1)
+                $(CUSTOM_PARAMETERS) 2>&1)
 
               # Capture exit code
               EXIT_CODE=$?
@@ -371,7 +371,7 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
-                $(CUSTOM_PARAMS)
+                $(CUSTOM_PARAMETERS)
 
   - stage: Prod
     displayName: Prod Stage
@@ -446,7 +446,7 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-prepare.scriptFilename=$(WORKING_DIRECTORY)/Artifact/$(SCRIPT_FILENAME)" \
                 -configFiles="$(WORKING_DIRECTORY)/flyway.toml" \
-                $(CUSTOM_PARAMS) 2>&1)
+                $(CUSTOM_PARAMETERS) 2>&1)
 
               # Capture exit code
               EXIT_CODE=$?
@@ -547,4 +547,4 @@ stages:
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
                 "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
-                $(CUSTOM_PARAMS)
+                $(CUSTOM_PARAMETERS)
