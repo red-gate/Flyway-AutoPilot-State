@@ -109,9 +109,9 @@ jobs:
 
           echo "RGClone Proxy Enabled"
 
-  # Validate-Flyway-Pipeline:
-  #   name: Run Flyway Pipeline
-  #   needs: setup-validation-environment
-  #   uses: ./.github/workflows/GitHub-Flyway-CICD-StateBased-Pipeline_Linux.yml
-  #   secrets: inherit  # Inherit existing secrets but allow environment overrides
+  Validate-Flyway-Pipeline:
+    name: Run Flyway Pipeline
+    needs: setup-validation-environment
+    uses: ./.github/workflows/GitHub-Flyway-CICD-StateBased-Pipeline_Linux.yml
+    secrets: inherit  # Inherit existing secrets but allow environment overrides
 
