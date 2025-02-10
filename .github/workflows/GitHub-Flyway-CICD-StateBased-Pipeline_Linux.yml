@@ -83,18 +83,28 @@ jobs:
       - name: Flyway CLI - Prepare Scripts
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
         run: |
-          # Run Flyway prepare command and capture output
-            echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
+              # Run Flyway prepare command and capture output
+              echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
               flywayDiffs=$(flyway prepare \
-                -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
-                -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
-                -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
-                -prepare.force="true" \
-                -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
-                -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
-                 ${{ env.CUSTOM_PARAMS }} 2>&1)
+              -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
+              -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+              -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+              -prepare.force="true" \
+              -email="$FLYWAY_EMAIL" \
+              -token="$FLYWAY_TOKEN" \
+              -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+              -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
+              ${{ env.CUSTOM_PARAMS }} || {
+              echo 'Flyway CLI - Diff Command Failed'
+              echo "$flywayDiffs"
+              exit 1 
+              }
+
+              echo "$diffList"
+
+              echo "Script Validation - Check if any differences found"
 
               # Capture exit code
               EXIT_CODE=$?
