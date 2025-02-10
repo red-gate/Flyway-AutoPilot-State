@@ -128,8 +128,8 @@ jobs:
             echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
               flyway deploy \
                 -environment="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -environments.Test.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.Test.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                 -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
                 ${{ env.CUSTOM_PARAMS }}
       # GitHub - After migration scripts are validated, publish them as an artifact
