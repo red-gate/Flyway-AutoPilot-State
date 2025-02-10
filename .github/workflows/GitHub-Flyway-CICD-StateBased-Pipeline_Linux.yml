@@ -165,7 +165,7 @@ jobs:
         TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
         TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
         CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
-        GENERATE_REPORTt: 'true' # Turn to false to skip the CHECK report stage tasks
+        GENERATE_REPORT: 'true' # Turn to false to skip the CHECK report stage tasks
       # Steps represent a sequence of tasks that will be executed as part of the job
       steps:
         # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
