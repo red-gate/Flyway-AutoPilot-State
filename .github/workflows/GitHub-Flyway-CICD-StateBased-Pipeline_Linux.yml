@@ -88,8 +88,8 @@ jobs:
               flywayDiffs=$(flyway prepare \
               -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
               -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
-              -environments.Build.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-              -environments.Build.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
               -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
               -prepare.force="true" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
@@ -128,8 +128,8 @@ jobs:
             echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
               flyway deploy \
                 -environment="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.Test.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.Test.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                 -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
                 ${{ env.CUSTOM_PARAMS }}
       # GitHub - After migration scripts are validated, publish them as an artifact
@@ -193,8 +193,8 @@ jobs:
                 flywayDiffs=$(flyway prepare \
                 -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
                 -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.Test.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.Test.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                 -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
                 -prepare.force="true" \
                 -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
@@ -241,8 +241,8 @@ jobs:
               echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
                 flyway deploy \
                   -environment="${{ env.TARGET_ENVIRONMENT }}" \
-                  -environments.Prod.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                  -environments.Prod.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                  -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                  -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                   -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
                   ${{ env.CUSTOM_PARAMS }}
             
@@ -290,8 +290,8 @@ jobs:
               flywayDiffs=$(flyway prepare \
               -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
               -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
-              -environments.Prod.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-              -environments.Prod.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
               -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
               -prepare.force="true" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
@@ -338,7 +338,7 @@ jobs:
             echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
               flyway deploy \
                 -environment="${{ env.TARGET_ENVIRONMENT }}" \
-                -environments.Prod.user="${{ env.TARGET_DATABASE_USERNAME }}" \
-                -environments.Prod.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
                 -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
                 ${{ env.CUSTOM_PARAMS }}
