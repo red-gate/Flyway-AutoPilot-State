@@ -96,7 +96,7 @@ jobs:
               -token="$FLYWAY_TOKEN" \
               -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
               -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
-              ${{ env.CUSTOM_PARAMS }} || {
+              ${{ env.CUSTOM_PARAMS }}) || {
               echo 'Flyway CLI - Diff Command Failed'
               echo "$flywayDiffs"
               exit 1 
