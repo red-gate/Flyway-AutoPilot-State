@@ -61,7 +61,7 @@ jobs:
       ENVIRONMENT: 'Build' # This variable refers to the environment name present in the Flyway Projects TOML file. 
       SOURCE_ENVIRONMENT: "schemaModel"
       TARGET_ENVIRONMENT: "Build"
-      SCRIPT_FILENAME: "Flyway-$(DATABASE_NAME)-AutoDeploymentScript.sql"
+      SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript.sql"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
