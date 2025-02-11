@@ -143,7 +143,8 @@ stages:
                 "-prepare.scriptFilename=$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)" `
                 "-prepare.force=true" `
                 -configFiles="$(WORKING_DIRECTORY)\flyway.toml" `
-                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
+                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" `
+                $(CUSTOM_PARAMETERS) | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
 
                 # Check if the prepare command succeeded and handle logic accordingly
                 if ($LASTEXITCODE -eq 0 -and $flywayDiffs -like "*no differences detected*") {
@@ -168,7 +169,8 @@ stages:
               "-environment=$(TARGET_ENVIRONMENT)" `
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
               "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" `
-              "-deploy.scriptFilename=$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)"
+              "-deploy.scriptFilename=$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)" `
+              $(CUSTOM_PARAMETERS)
         # ADO - Copy in-scope build files to artifact directory 
         - task: CopyFiles@2
           condition: succeeded()
@@ -278,7 +280,8 @@ stages:
                 "-prepare.scriptFilename=$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)" `
                 "-prepare.force=true" `
                 -configFiles="$(WORKING_DIRECTORY)\flyway.toml" `
-                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
+                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" `
+                $(CUSTOM_PARAMETERS) | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
 
                 # Check if the prepare command succeeded and handle logic accordingly
                 if ($LASTEXITCODE -eq 0 -and $flywayDiffs -like "*no differences detected*") {
@@ -382,7 +385,8 @@ stages:
               "-environment=$(TARGET_ENVIRONMENT)" `
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
               "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" `
-              "-deploy.scriptFilename=$(System.ArtifactsDirectory)\Flyway-CD-Reports-$(Build.BuildId)\$(SCRIPT_FILENAME)"
+              "-deploy.scriptFilename=$(System.ArtifactsDirectory)\Flyway-CD-Reports-$(Build.BuildId)\$(SCRIPT_FILENAME)" `
+              $(CUSTOM_PARAMETERS)
 
   - stage: Prod
     displayName: Prod Stage
@@ -467,7 +471,8 @@ stages:
                 "-prepare.scriptFilename=$(WORKING_DIRECTORY)\Artifact\$(SCRIPT_FILENAME)" `
                 "-prepare.force=true" `
                 -configFiles="$(WORKING_DIRECTORY)\flyway.toml" `
-                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
+                -schemaModelLocation="$(WORKING_DIRECTORY)\schema-model" `
+                $(CUSTOM_PARAMETERS) | Tee-Object -Variable flywayDiffs  # Capture Flyway Diff output to variable flywayDiffs and show output in console
 
                 # Check if the prepare command succeeded and handle logic accordingly
                 if ($LASTEXITCODE -eq 0 -and $flywayDiffs -like "*no differences detected*") {
@@ -571,4 +576,5 @@ stages:
               "-environment=$(TARGET_ENVIRONMENT)" `
               "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" `
               "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" `
-              "-deploy.scriptFilename=$(System.ArtifactsDirectory)\Flyway-CD-Reports-$(Build.BuildId)\$(SCRIPT_FILENAME)"
+              "-deploy.scriptFilename=$(System.ArtifactsDirectory)\Flyway-CD-Reports-$(Build.BuildId)\$(SCRIPT_FILENAME)" `
+              $(CUSTOM_PARAMETERS)

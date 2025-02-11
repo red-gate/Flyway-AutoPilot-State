@@ -59,6 +59,9 @@ jobs:
       displayName: 'Build'
       DATABASE_NAME: 'AutoPilotBuild'
       ENVIRONMENT: 'Build' # This variable refers to the environment name present in the Flyway Projects TOML file. 
+      SOURCE_ENVIRONMENT: "schemaModel"
+      TARGET_ENVIRONMENT: "Build"
+      SCRIPT_FILENAME: "Flyway-AutoPilotBuild-AutoDeploymentScript.sql"
       TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
       TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
       CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
@@ -76,4 +79,266 @@ jobs:
         if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
         run: |
          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
-           # Step 2 - Ensure the Build Database is cleaned of all objects, meaning the build starts from scratch
+      # Step 2 - Prepare: Detect differences and create deployment script
+      - name: Flyway CLI - Prepare Scripts
+        if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
+        run: |
+              # Run Flyway prepare command and capture output
+              echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
+              flywayDiffs=$(flyway prepare \
+              -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
+              -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+              -prepare.force="true" \
+              -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+              -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
+              ${{ env.CUSTOM_PARAMS }}) || {
+              echo 'Flyway CLI - Diff Command Failed'
+              echo "$flywayDiffs"
+              exit 1 
+              }
+
+              echo "Script Validation - Check if any differences found"
+
+              # Capture exit code
+              EXIT_CODE=$?
+
+              # Display output in console
+              echo "$flywayDiffs"
+
+              if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
+                  echo "No changes to generate. Exiting script gracefully."
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_OUTPUT"
+                  exit 0
+                elif [[ $EXIT_CODE -eq 0 ]]; then
+                  echo "Changes detected. Proceeding with further steps."
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_OUTPUT"
+                else
+                  echo "Error: The flyway prepare command failed. Exiting script with error."
+                  exit 1
+                fi
+      # Step 3 - Deploy: Deploy changes to target environment
+      - name: Flyway CLI - Deploy Changes
+        if: ${{ env.EXECUTE_BUILD == 'true' && env.CHANGES_DETECTED == 'true' && success() }}
+        run: |
+            echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
+              flyway deploy \
+                -environment="${{ env.TARGET_ENVIRONMENT }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                ${{ env.CUSTOM_PARAMS }}
+      # GitHub - After migration scripts are validated, publish them as an artifact
+      - name: Publish Validated Migration Scripts as Artifact
+        if: ${{ env.publishArtifacts == 'true' && success() }}
+        uses: actions/upload-artifact@v4
+        with: 
+          name: flyway-build-artifact-${{ github.run_number }}
+          path: |
+              !${{ GITHUB.WORKSPACE }}/flyway-*/**/*
+              !${{ GITHUB.WORKSPACE }}/.git/**/*
+              !${{ GITHUB.WORKSPACE }}/.git*/**/*
+              ${{ GITHUB.WORKSPACE }}/**/schema-model/**/*
+              ${{ GITHUB.WORKSPACE }}/**/migrations/**/*
+              ${{ GITHUB.WORKSPACE }}/**/Scripts/**/*
+              ${{ GITHUB.WORKSPACE }}/**/backups/**/*
+              ${{ GITHUB.WORKSPACE }}/**/flyway.toml
+              ${{ GITHUB.WORKSPACE }}/**/Filter.scpf
+  test:
+      name: Deploy Test
+      # The type of runner that the job will run on
+      runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+      environment: 'test' # This refers to GitHub's Environment name
+      if: ${{ true }} #Set this variable to false to temporarily disable the job
+      needs: build
+      env:
+        stage: 'Test'
+        DATABASE_NAME: "AutoPilotTest"
+        ENVIRONMENT: "Test" # Refers to the environment in the Flyway Project TOML file.
+        SOURCE_ENVIRONMENT: "schemaModel"
+        TARGET_ENVIRONMENT: "Test"
+        SCRIPT_FILENAME: "Flyway-AutoPilotTest-AutoDeploymentScript.sql"
+        TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
+        TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
+        CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+        GENERATE_REPORT: 'true' # Turn to false to skip the CHECK report stage tasks
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/download-artifact@v4
+          with:
+            name: flyway-build-artifact-${{ github.run_number }}
+        # Optional - List out all build artifact files on disk, helpful for debugging
+        - name: Display structure of downloaded files
+          run: ls -R
+        # Optional - If Enabled, Flyway CLI will be validated and installed if not present
+        - name: Flyway - CLI Automatic Validation and Install
+          run: bash ${{ GITHUB.WORKSPACE }}/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh
+          if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
+        # Step 1 - Flyway License Authentication #
+        - name: Flyway Authentication
+          if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
+          run: |
+            flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
+        # Step 2 - Prepare: Detect differences and create deployment script
+        - name: Flyway CLI - Prepare Scripts
+          if: ${{ env.GENERATE_REPORT == 'true' && success() }}
+          run: |
+                # Run Flyway prepare command and capture output
+                echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
+                flywayDiffs=$(flyway prepare \
+                -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
+                -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                -prepare.force="true" \
+                -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+                -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
+                ${{ env.CUSTOM_PARAMS }}) || {
+                echo 'Flyway CLI - Diff Command Failed'
+                echo "$flywayDiffs"
+                exit 1 
+                }
+
+                echo "Script Validation - Check if any differences found"
+
+                # Capture exit code
+                EXIT_CODE=$?
+
+                # Display output in console
+                echo "$flywayDiffs"
+
+                if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
+                    echo "No changes to generate. Exiting script gracefully."
+                    echo "CHANGES_DETECTED=false" >> "$GITHUB_ENV"
+                    echo "CHANGES_DETECTED=false" >> "$GITHUB_OUTPUT"
+                    exit 0
+                  elif [[ $EXIT_CODE -eq 0 ]]; then
+                    echo "Changes detected. Proceeding with further steps."
+                    echo "CHANGES_DETECTED=true" >> "$GITHUB_ENV"
+                    echo "CHANGES_DETECTED=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "Error: The flyway prepare command failed. Exiting script with error."
+                    exit 1
+                  fi
+        # Step 3 - Publish Check Report
+        - name: Publish Check Report as Artifact
+          if: ${{ env.GENERATE_REPORT == 'true' && success() }}
+          uses: actions/upload-artifact@v4
+          with: 
+            name: flyway-reports-test
+            path: ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}  
+
+        # Step 3 - Deploy: Deploy changes to target environment
+        - name: Flyway CLI - Deploy Changes
+          if: ${{ env.CHANGES_DETECTED == 'true' && success() }}
+          run: |
+              echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
+                flyway deploy \
+                  -environment="${{ env.TARGET_ENVIRONMENT }}" \
+                  -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                  -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                  -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                  ${{ env.CUSTOM_PARAMS }}
+            
+  prod:
+    name: Deploy Prod
+    # The type of runner that the job will run on
+    runs-on: "self-hosted" # Options - self-hosted/ubuntu-latest/windows-latest (See here for more details on GitHub hosted runners - https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
+    environment: 'prod'
+    if: ${{ true }} #Set this variable to false to temporarily disable the job
+    needs: test
+    env:
+      stage: 'Prod'
+      DATABASE_NAME: "AutoPilotProd"
+      ENVIRONMENT: "Prod" # Refers to the environment name in the Flyway Project TOML file.
+      SOURCE_ENVIRONMENT: "schemaModel"
+      TARGET_ENVIRONMENT: "Prod"
+      SCRIPT_FILENAME: "Flyway-AutoPilotProd-AutoDeploymentScript.sql"
+      TARGET_DATABASE_USERNAME: "${{ secrets.TARGET_DATABASE_USERNAME }}"
+      TARGET_DATABASE_PASSWORD: "${{ secrets.TARGET_DATABASE_PASSWORD }}"
+      CUSTOM_PARAMS: "${{ secrets.CUSTOM_PARAMS }}" # Secure method of adding custom Flyway Parameters (Example -X for debug)
+      GENERATE_REPORT: 'true' # Turn to false to skip the CHECK report stage tasks
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/download-artifact@v4
+        with:
+          name: flyway-build-artifact-${{ github.run_number }}
+      # Optional - List out all build artifact files on disk, helpful for debugging
+      - name: Display structure of downloaded files
+        run: ls -R
+      # Optional - If Enabled, Flyway CLI will be validated and installed if not present
+      - name: Flyway - CLI Automatic Validation and Install
+        run: bash ${{ GITHUB.WORKSPACE }}/Scripts/Flyway_DownloadAndInstallCLI_Unix.sh
+        if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
+      # Step 1 - Flyway License Authentication #
+      - name: Flyway Authentication
+        if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
+        run: |
+          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
+      # Step 2 - Prepare: Detect differences and create deployment script
+      - name: Flyway CLI - Prepare Scripts
+        if: ${{ env.GENERATE_REPORT == 'true' && success() }}
+        run: |
+              # Run Flyway prepare command and capture output
+              echo "Flyway CLI - Detecting differences between ${{ env.SOURCE_ENVIRONMENT }} and ${{ env.TARGET_ENVIRONMENT }}"
+              flywayDiffs=$(flyway prepare \
+              -prepare.source="${{ env.SOURCE_ENVIRONMENT }}" \
+              -prepare.target="${{ env.TARGET_ENVIRONMENT }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+              -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+              -prepare.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+              -prepare.force="true" \
+              -configFiles="${{ GITHUB.WORKSPACE }}/flyway.toml" \
+              -schemaModelLocation="${{ GITHUB.WORKSPACE }}/schema-model" \
+              ${{ env.CUSTOM_PARAMS }}) || {
+              echo 'Flyway CLI - Diff Command Failed'
+              echo "$flywayDiffs"
+              exit 1 
+              }
+
+              echo "Script Validation - Check if any differences found"
+
+              # Capture exit code
+              EXIT_CODE=$?
+
+              # Display output in console
+              echo "$flywayDiffs"
+
+              if [[ $EXIT_CODE -eq 0 && "$flywayDiffs" == *"no differences detected"* ]]; then
+                  echo "No changes to generate. Exiting script gracefully."
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=false" >> "$GITHUB_OUTPUT"
+                  exit 0
+                elif [[ $EXIT_CODE -eq 0 ]]; then
+                  echo "Changes detected. Proceeding with further steps."
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_ENV"
+                  echo "CHANGES_DETECTED=true" >> "$GITHUB_OUTPUT"
+                else
+                  echo "Error: The flyway prepare command failed. Exiting script with error."
+                  exit 1
+                fi
+      # Step 3 - Publish Check Report
+      - name: Publish Check Report as Artifact
+        if: ${{ env.generateReport == 'true' && success() }}
+        uses: actions/upload-artifact@v4
+        with: 
+          name: flyway-reports-test
+          path: ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}  
+
+      # Step 3 - Deploy: Deploy changes to target environment
+      - name: Flyway CLI - Deploy Changes
+        if: ${{ env.CHANGES_DETECTED == 'true' && success() }}
+        run: |
+            echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
+              flyway deploy \
+                -environment="${{ env.TARGET_ENVIRONMENT }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" \
+                -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" \
+                -deploy.scriptFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}" \
+                ${{ env.CUSTOM_PARAMS }}
