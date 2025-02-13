@@ -395,7 +395,7 @@ stages:
     #pool: "" # By default the global Agent Pool will be used for all stages. Each stage could instead be given a custom Agent Pool here if required, typically for security reasons.
     variables: # Tip - For sensitive variables, store these in a Library Variable Group and reference the name below (Click Pipelines --> Library --> + Variable Group)
       - group: "AutoPilotGlobal" # Expected Variables - FLYWAY_EMAIL/FLYWAY_TOKEN/AGENT_POOL
-      - group: "AutoPilotTest" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
+      - group: "AutoPilotProd" # Expected Variables - TARGET_DATABASE_URL/TARGET_DATABASE_USER/TARGET_DATABASE_PASSWORD/REPORT_DATABASE_URL/REPORT_DATABASE_USER/REPORT_DATABASE_PASSWORD
       # Example Variable syntax if required. Sensitive values should ALWAYS be kept secure
       - name: DATABASE_NAME
         value: "AutoPilotProd"
