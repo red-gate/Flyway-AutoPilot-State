@@ -33,6 +33,7 @@ schemaModelLocation = "schema-model"
 validateMigrationNaming = true
 sqlserver.clean.mode = "all"
 sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
+cleanDisabled = false
 
 [flyway.check]
 majorTolerance = 0
