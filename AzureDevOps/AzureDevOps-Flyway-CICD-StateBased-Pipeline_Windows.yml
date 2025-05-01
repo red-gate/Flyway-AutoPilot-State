@@ -141,12 +141,12 @@ stages:
         # Step 2 - Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
         # Tip - Notice the CLI Verb chaining. This command uses 'prepare' and 'deploy' together to streamline the deployment task.
         - task: PowerShell@2
-          displayName: 'Flyway CLI - Prepare and Deploy'
+          displayName: 'Flyway CLI - Clean, Prepare and Deploy'
           condition: and(succeeded(), eq(variables['EXECUTE_BUILD'], true))
           inputs:
             targetType: 'inline'
             script: |
-                      flyway prepare deploy `
+                      flyway clean prepare deploy `
                       "-prepare.source=$(SOURCE_ENVIRONMENT)" `
                       "-prepare.target=$(TARGET_ENVIRONMENT)" `
                       "-environment=$(TARGET_ENVIRONMENT)" `
