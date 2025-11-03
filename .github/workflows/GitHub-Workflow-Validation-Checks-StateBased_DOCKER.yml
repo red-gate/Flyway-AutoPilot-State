@@ -17,7 +17,7 @@ jobs:
       IMAGE_NAME: "${{ vars.IMAGE_NAME }}"
       SA_PASSWORD: "DatabaseDevOps!"
       HOST_PORT: "${{ vars.CONTAINER_PORT }}"
-      BASE_CONTAINER_NAME: "${{ vars.RGCLONE_CONTAINER_NAME }}"
+      BASE_CONTAINER_NAME: "${{ vars.CONTAINER_NAME }}"
       CONTAINER_NAME: "${{ vars.CONTAINER_NAME }}-${{ github.run_number }}"
       DB_INIT_SCRIPT: "${{ github.workspace }}/Scripts/CreateAutopilotDatabases.sql"
     steps:
