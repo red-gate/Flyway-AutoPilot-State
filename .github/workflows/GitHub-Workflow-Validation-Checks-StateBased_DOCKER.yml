@@ -46,8 +46,13 @@ jobs:
             echo "Port $HOST_PORT is free."
           fi
 
-      - name: Pull Docker Image
-        run: docker pull $IMAGE_NAME || echo "Image already local, skipping pull."
+      - name: Pull Docker Image (if not local)
+        run: |
+          if [[ "$IMAGE_NAME" == local/* ]]; then
+            echo "Skipping pull for local image: $IMAGE_NAME"
+          else
+            docker pull "$IMAGE_NAME"
+          fi
       
       - name: Start Docker Container
         run: |
