@@ -64,6 +64,11 @@ jobs:
             -p $HOST_PORT:1433 \
             $IMAGE_NAME
 
+      - name: Wait for container startup
+        run: |
+          echo "Waiting 10 seconds for container to finish starting..."
+          sleep 15
+
       - name: Ensure mssql-tools is available inside container
         run: |
           if docker exec $CONTAINER_NAME bash -c "command -v sqlcmd" >/dev/null 2>&1; then
