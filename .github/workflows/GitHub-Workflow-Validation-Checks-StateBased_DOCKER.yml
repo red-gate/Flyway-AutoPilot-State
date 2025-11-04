@@ -69,12 +69,12 @@ jobs:
           echo "Waiting 10 seconds for container to finish starting..."
           sleep 15
 
-      - name: Ensure mssql-tools is available inside container
+      - name: Check or install sqlcmd
         run: |
-          if docker exec $CONTAINER_NAME bash -c "command -v sqlcmd" >/dev/null 2>&1; then
-            echo "mssql-tools already installed. Skipping installation."
+          if docker exec $CONTAINER_NAME bash -c "[ -x /opt/mssql-tools/bin/sqlcmd ]"; then
+            echo "sqlcmd already installed."
           else
-            echo "Installing mssql-tools inside container..."
+            echo "sqlcmd missing — installing..."
             docker exec -u root $CONTAINER_NAME bash -c "\
               apt-get update && \
               apt-get install -y curl gnupg2 apt-transport-https && \
