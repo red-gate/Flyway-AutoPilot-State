@@ -3,7 +3,7 @@ id = "cee15467-eeac-4697-95b1-d55ebf1cf896"
 name = "Autopilot - State Based"
 
 [environments.development]
-url = "jdbc:sqlserver://localhost;databaseName=AutopilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+url = "jdbc:sqlserver://localhost;instanceName=sql2022;databaseName=AutopilotDev;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
 displayName = "Development database"
 
 [environments.Prod]
@@ -31,12 +31,15 @@ mixed = true
 outOfOrder = true
 schemaModelLocation = "schema-model"
 validateMigrationNaming = true
-sqlserver.clean.mode = "all"
-sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
 
-[flyway.check]
-majorTolerance = 0
+[flyway.sqlserver.clean]
+mode = "all"
 
+  [flyway.sqlserver.clean.schemas]
+  exclude = [ "ExampleSchema1", "ExampleSchema2" ]
+
+  [flyway.check]
+  majorTolerance = 0
 
 [flywayDesktop]
 developmentEnvironment = "development"
@@ -138,4 +141,3 @@ dropPrimaryKeysIndexesAndUniqueConstraints = false
 reseedIdentityColumns = false
 skipIntegrityChecksForForeignKeys = false
 transportClrDataTypesAsBinary = false
-
