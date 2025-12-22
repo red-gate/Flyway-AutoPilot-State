@@ -6,32 +6,32 @@
 -- Description: Flyway Autopilot FastTrack Database Setup Script
 -- ===========================
 
--- Drop AutopilotDev database if it exists to ensure fresh setup
-IF DB_ID('AutopilotDev') IS NOT NULL
+-- Drop APStateDev database if it exists to ensure fresh setup
+IF DB_ID('APStateDev') IS NOT NULL
 BEGIN
 	USE MASTER
-    ALTER DATABASE AutopilotDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE AutopilotDev;
-	PRINT 'AutopilotDev Database Dropped'
+    ALTER DATABASE APStateDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE APStateDev;
+	PRINT 'APStateDev Database Dropped'
 END;
 
 -- Ensure each database exists, creating them if needed
-IF DB_ID('AutopilotDev') IS NULL CREATE DATABASE AutopilotDev;
-PRINT 'AutopilotDev Database Created';
-IF DB_ID('AutopilotTest') IS NULL CREATE DATABASE AutopilotTest;
-PRINT 'AutopilotTest Database Created';
-IF DB_ID('AutopilotProd') IS NULL CREATE DATABASE AutopilotProd;
-PRINT 'AutopilotProd Database Created';
-IF DB_ID('AutopilotCheck') IS NULL CREATE DATABASE AutopilotCheck;
-PRINT 'AutopilotCheck Database Created';
-IF DB_ID('AutopilotBuild') IS NULL CREATE DATABASE AutopilotBuild;
-PRINT 'AutopilotBuild Database Created';
-IF DB_ID('AutopilotShadow') IS NULL CREATE DATABASE AutopilotShadow;
-PRINT 'AutopilotShadow Database Created';
+IF DB_ID('APStateDev') IS NULL CREATE DATABASE APStateDev;
+PRINT 'APStateDev Database Created';
+IF DB_ID('APStateTest') IS NULL CREATE DATABASE APStateTest;
+PRINT 'APStateTest Database Created';
+IF DB_ID('APStateProd') IS NULL CREATE DATABASE APStateProd;
+PRINT 'APStateProd Database Created';
+IF DB_ID('APStateCheck') IS NULL CREATE DATABASE APStateCheck;
+PRINT 'APStateCheck Database Created';
+IF DB_ID('APStateBuild') IS NULL CREATE DATABASE APStateBuild;
+PRINT 'APStateBuild Database Created';
+IF DB_ID('APStateShadow') IS NULL CREATE DATABASE APStateShadow;
+PRINT 'APStateShadow Database Created';
 GO
-USE AutopilotDev;
+USE APStateDev;
 GO
-ALTER DATABASE AutopilotDev SET MULTI_USER;
+ALTER DATABASE APStateDev SET MULTI_USER;
 GO
 
 /* Set DATEFORMAT so that the date strings are interpreted correctly regardless of
