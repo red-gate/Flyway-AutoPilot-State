@@ -1,37 +1,37 @@
 -- ===========================
 -- Script Name: CreateAutopilotDatabases.sql
--- Version: 1.0.2
+-- Version: 1.0.1
 -- Author: Redgate Software Ltd
 -- Last Updated: 2025-03-17
 -- Description: Flyway Autopilot FastTrack Database Setup Script
 -- ===========================
 
--- Drop APStateDev database if it exists to ensure fresh setup
-IF DB_ID('APStateDev') IS NOT NULL
+-- Drop AutopilotDev database if it exists to ensure fresh setup
+IF DB_ID('AutopilotDev') IS NOT NULL
 BEGIN
 	USE MASTER
-    ALTER DATABASE APStateDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE APStateDev;
-	PRINT 'APStateDev Database Dropped'
+    ALTER DATABASE AutopilotDev SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE AutopilotDev;
+	PRINT 'AutopilotDev Database Dropped'
 END;
 
 -- Ensure each database exists, creating them if needed
-IF DB_ID('APStateDev') IS NULL CREATE DATABASE APStateDev;
-PRINT 'APStateDev Database Created';
-IF DB_ID('APStateTest') IS NULL CREATE DATABASE APStateTest;
-PRINT 'APStateTest Database Created';
-IF DB_ID('APStateProd') IS NULL CREATE DATABASE APStateProd;
-PRINT 'APStateProd Database Created';
-IF DB_ID('APStateCheck') IS NULL CREATE DATABASE APStateCheck;
-PRINT 'APStateCheck Database Created';
-IF DB_ID('APStateBuild') IS NULL CREATE DATABASE APStateBuild;
-PRINT 'APStateBuild Database Created';
-IF DB_ID('APStateShadow') IS NULL CREATE DATABASE APStateShadow;
-PRINT 'APStateShadow Database Created';
+IF DB_ID('AutopilotDev') IS NULL CREATE DATABASE AutopilotDev;
+PRINT 'AutopilotDev Database Created';
+IF DB_ID('AutopilotTest') IS NULL CREATE DATABASE AutopilotTest;
+PRINT 'AutopilotTest Database Created';
+IF DB_ID('AutopilotProd') IS NULL CREATE DATABASE AutopilotProd;
+PRINT 'AutopilotProd Database Created';
+IF DB_ID('AutopilotCheck') IS NULL CREATE DATABASE AutopilotCheck;
+PRINT 'AutopilotCheck Database Created';
+IF DB_ID('AutopilotBuild') IS NULL CREATE DATABASE AutopilotBuild;
+PRINT 'AutopilotBuild Database Created';
+IF DB_ID('AutopilotShadow') IS NULL CREATE DATABASE AutopilotShadow;
+PRINT 'AutopilotShadow Database Created';
 GO
-USE APStateDev;
+USE AutopilotDev;
 GO
-ALTER DATABASE APStateDev SET MULTI_USER;
+ALTER DATABASE AutopilotDev SET MULTI_USER;
 GO
 
 /* Set DATEFORMAT so that the date strings are interpreted correctly regardless of
@@ -734,6 +734,30 @@ GO
 SET TRANSACTION ISOLATION LEVEL Serializable
 GO
 BEGIN TRANSACTION
+
+PRINT(N'Drop constraints from [Sales].[OrderAuditLog]')
+ALTER TABLE [Sales].[OrderAuditLog] NOCHECK CONSTRAINT [FK__OrderAudi__Order__4316F928]
+
+PRINT(N'Drop constraints from [Logistics].[EmployeeTerritories]')
+ALTER TABLE [Logistics].[EmployeeTerritories] NOCHECK CONSTRAINT [FK_EmployeeTerritories_Employees]
+ALTER TABLE [Logistics].[EmployeeTerritories] NOCHECK CONSTRAINT [FK_EmployeeTerritories_Territories]
+
+PRINT(N'Drop constraints from [Sales].[Territories]')
+ALTER TABLE [Sales].[Territories] NOCHECK CONSTRAINT [FK_Territories_Region]
+
+PRINT(N'Drop constraints from [Sales].[Orders]')
+ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Customers]
+ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Employees]
+ALTER TABLE [Sales].[Orders] NOCHECK CONSTRAINT [FK_Orders_Shippers]
+
+PRINT(N'Drop constraints from [Sales].[CustomersFeedback]')
+ALTER TABLE [Sales].[CustomersFeedback] NOCHECK CONSTRAINT [FK__Customers__Custo__286302EC]
+
+PRINT(N'Drop constraints from [Logistics].[MaintenanceLog]')
+ALTER TABLE [Logistics].[MaintenanceLog] NOCHECK CONSTRAINT [FK__Maintenan__Fligh__30F848ED]
+
+PRINT(N'Drop constraints from [Operation].[Employees]')
+ALTER TABLE [Operation].[Employees] NOCHECK CONSTRAINT [FK_Employees_Employees]
 
 PRINT(N'Add rows to [Logistics].[Flight]')
 SET IDENTITY_INSERT [Logistics].[Flight] ON
