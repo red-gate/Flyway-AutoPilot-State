@@ -376,7 +376,7 @@ stages:
                 "-environment=$(TARGET_ENVIRONMENT)" \
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
-                "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
+                "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/D_$(SCRIPT_FILENAME)" \
                 "-deploy.saveSnapshot=$(SAVE_SNAPSHOT)" \
                 $(CUSTOM_PARAMETERS)
 
@@ -580,6 +580,6 @@ stages:
                 "-environment=$(TARGET_ENVIRONMENT)" \
                 "-environments.$(TARGET_ENVIRONMENT).user=$(TARGET_DATABASE_USERNAME)" \
                 "-environments.$(TARGET_ENVIRONMENT).password=$(TARGET_DATABASE_PASSWORD)" \
-                "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/$(SCRIPT_FILENAME)" \
+                "-deploy.scriptFilename=$(System.ArtifactsDirectory)/Flyway-CD-Reports-$(Build.BuildId)/D_$(SCRIPT_FILENAME)" \
                 "-deploy.saveSnapshot=$(SAVE_SNAPSHOT)" \
                 $(CUSTOM_PARAMETERS)

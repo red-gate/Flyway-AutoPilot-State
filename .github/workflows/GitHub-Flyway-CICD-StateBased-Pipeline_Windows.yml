@@ -247,7 +247,7 @@ jobs:
             -environment="${{ env.TARGET_ENVIRONMENT }}" `
             -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" `
             -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" `
-            "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}" `
+            "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\D_${{ env.SCRIPT_FILENAME }}" `
             "-deploy.saveSnapshot=${{ env.SNAPSHOT_FILENAME }}" `
             ${{ env.CUSTOM_PARAMS }}
 
@@ -364,6 +364,6 @@ jobs:
             -environment="${{ env.TARGET_ENVIRONMENT }}" `
             -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" `
             -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" `
-            "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}" `
+            "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\D_${{ env.SCRIPT_FILENAME }}" `
             "-deploy.saveSnapshot=${{ env.SAVE_SNAPSHOT }}" `
             ${{ env.CUSTOM_PARAMS }}
