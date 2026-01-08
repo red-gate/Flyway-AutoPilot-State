@@ -1,4 +1,4 @@
-# Flyway AutoPilot FastTrack - Quest Guide
+# Flyway AutoPilot - Quest Guide
 
 Welcome to the Flyway Quests! Choose quests based on what you want to learn - each quest is self-contained and focuses on a specific topic.
 
@@ -11,7 +11,8 @@ Welcome to the Flyway Quests! Choose quests based on what you want to learn - ea
 **Focus:** Using Flyway as your Database Release tool. Test, Report, Deploy and more regardless if using the GUI, CLI or Pipelines.
 
 ### 📦 Scenarios
-**Focus:** Curious How Flyway can handle certain objects, types or scenarios? Delve through our out of the box Scenarios to be confident in Flyways capabilities.
+**Focus** Curious How Flyway can handle certain objects, types or scenarios? Delve through our out of the box Scenarios to be confident in Flyways capabilities.
+
 ---
 
 ## 🚀 Getting Started
