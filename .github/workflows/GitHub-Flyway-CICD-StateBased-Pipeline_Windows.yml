@@ -108,7 +108,7 @@ jobs:
           flyway clean prepare deploy `
           "-prepare.source=${{ env.SOURCE_ENVIRONMENT }}" `
           "-prepare.target=${{ env.TARGET_ENVIRONMENT }}" `
-          "-environments=${{ env.TARGET_ENVIRONMENT }}" `
+          "-environment=${{ env.TARGET_ENVIRONMENT }}" `
           "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
           "-environments.${{ env.TARGET_ENVIRONMENT }}.password=${{ env.TARGET_DATABASE_PASSWORD }}" `
           "-prepare.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}" `
@@ -245,8 +245,8 @@ jobs:
             echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
             flyway deploy `
             -environment="${{ env.TARGET_ENVIRONMENT }}" `
-            -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" `
-            -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" `
+            "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
+            "-environments.${{ env.TARGET_ENVIRONMENT }}.password=${{ env.TARGET_DATABASE_PASSWORD }}" `
             "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\D_${{ env.SCRIPT_FILENAME }}" `
             "-deploy.saveSnapshot=${{ env.SNAPSHOT_FILENAME }}" `
             ${{ env.CUSTOM_PARAMS }}
@@ -362,8 +362,8 @@ jobs:
             echo "Flyway CLI - Deploying differences to: ${{ env.TARGET_ENVIRONMENT }}"
             flyway deploy `
             -environment="${{ env.TARGET_ENVIRONMENT }}" `
-            -environments.${{ env.TARGET_ENVIRONMENT }}.user="${{ env.TARGET_DATABASE_USERNAME }}" `
-            -environments.${{ env.TARGET_ENVIRONMENT }}.password="${{ env.TARGET_DATABASE_PASSWORD }}" `
+            "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
+            "-environments.${{ env.TARGET_ENVIRONMENT }}.password=${{ env.TARGET_DATABASE_PASSWORD }}" `
             "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\D_${{ env.SCRIPT_FILENAME }}" `
             "-deploy.saveSnapshot=${{ env.SAVE_SNAPSHOT }}" `
             ${{ env.CUSTOM_PARAMS }}
