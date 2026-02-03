@@ -248,7 +248,7 @@ jobs:
             "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
             "-environments.${{ env.TARGET_ENVIRONMENT }}.password=${{ env.TARGET_DATABASE_PASSWORD }}" `
             "-deploy.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\D_${{ env.SCRIPT_FILENAME }}" `
-            "-deploy.saveSnapshot=${{ env.SNAPSHOT_FILENAME }}" `
+            "-deploy.saveSnapshot=${{ env.SAVE_SNAPSHOT }}" `
             ${{ env.CUSTOM_PARAMS }}
 
   prod:
