@@ -108,7 +108,7 @@ jobs:
           flyway clean prepare deploy `
           "-prepare.source=${{ env.SOURCE_ENVIRONMENT }}" `
           "-prepare.target=${{ env.TARGET_ENVIRONMENT }}" `
-          "-environments=${{ env.TARGET_ENVIRONMENT }}" `
+          "-environment=${{ env.TARGET_ENVIRONMENT }}" `
           "-environments.${{ env.TARGET_ENVIRONMENT }}.user=${{ env.TARGET_DATABASE_USERNAME }}" `
           "-environments.${{ env.TARGET_ENVIRONMENT }}.password=${{ env.TARGET_DATABASE_PASSWORD }}" `
           "-prepare.scriptFilename=${{ GITHUB.WORKSPACE }}\Artifact\${{ env.SCRIPT_FILENAME }}" `
