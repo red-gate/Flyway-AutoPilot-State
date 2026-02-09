@@ -80,17 +80,15 @@ jobs:
       - uses: actions/checkout@v4
       # Optional - If Enabled, Flyway CLI will be installed if not present
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v1
+        uses: red-gate/setup-flyway@ed00cfd1665413857d0353bf623b0134c355bc45
         with:
           version: ${{ env.FLYWAY_VERSION }}
+          email: ${{ secrets.FLYWAY_EMAIL }}
+          token: ${{ secrets.FLYWAY_TOKEN }}
+          i-agree-to-the-eula: true
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-      # Step 1 - Flyway License Authentication #
-      - name: Flyway Authentication
-        if: ${{ env.EXECUTE_BUILD == 'true' && env.FLYWAY_AUTH_DISABLED != 'true' && success() }}
-        run: |
-         flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
          
-      # Step 2 - Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
+      # Prepare & Deploy: Detect differences > Create deployment script > Deploy script to target (If any found)
       # Tip - Notice the CLI Verb chaining. This command uses 'clean', 'prepare' and 'deploy' together to streamline the deployment task.
       - name: Flyway CLI - Prepare and Deploy
         if: ${{ env.EXECUTE_BUILD == 'true' && success() }}
@@ -157,16 +155,14 @@ jobs:
           run: ls -R
         # Optional - If Enabled, Flyway CLI will be installed if not present
         - name: Flyway - CLI Install
-          uses: red-gate/setup-flyway@v1
+          uses: red-gate/setup-flyway@ed00cfd1665413857d0353bf623b0134c355bc45
           with:
             version: ${{ env.FLYWAY_VERSION }}
+            email: ${{ secrets.FLYWAY_EMAIL }}
+            token: ${{ secrets.FLYWAY_TOKEN }}
+            i-agree-to-the-eula: true
           if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-        # Step 1 - Flyway License Authentication #
-        - name: Flyway Authentication
-          if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
-          run: |
-            flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
-        # Step 2 - Prepare: Detect differences and create deployment script
+        # Step 1 - Prepare: Detect differences and create deployment script
         - name: Flyway CLI - Prepare Scripts
           if: ${{ env.GENERATE_REPORT == 'true' && success() }}
           run: |
@@ -210,7 +206,7 @@ jobs:
                     echo "Error: The flyway prepare command failed. Exiting script with error."
                     exit 1
                   fi
-        # Step 3 - Creating Changes Report #
+        # Step 2 - Creating Changes Report #
         - name: Flyway CLI - Changes Report
           if: ${{ env.GENERATE_REPORT == 'true' && success() }}
           run: |
@@ -227,7 +223,7 @@ jobs:
               -workingDirectory="${{ GITHUB.WORKSPACE }}" \
               -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
               ${{ env.CUSTOM_PARAMS }}
-        # Step 4 - Publish Check Report
+        # Step 3 - Publish Check Report
         - name: Publish Check Report as Artifact
           if: ${{ env.GENERATE_REPORT == 'true' && success() }}
           uses: actions/upload-artifact@v4
@@ -237,7 +233,7 @@ jobs:
               ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}
               ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}    
 
-        # Step 3 - Deploy: Deploy changes to target environment
+        # Step 4 - Deploy: Deploy changes to target environment
         - name: Flyway CLI - Deploy Changes
           if: ${{ env.CHANGES_DETECTED == 'true' && success() }}
           run: |
@@ -281,16 +277,14 @@ jobs:
         run: ls -R
       # Optional - If Enabled, Flyway CLI will be installed if not present
       - name: Flyway - CLI Install
-        uses: red-gate/setup-flyway@v1
+        uses: red-gate/setup-flyway@ed00cfd1665413857d0353bf623b0134c355bc45
         with:
           version: ${{ env.FLYWAY_VERSION }}
+          email: ${{ secrets.FLYWAY_EMAIL }}
+          token: ${{ secrets.FLYWAY_TOKEN }}
+          i-agree-to-the-eula: true
         if: env.FLYWAY_CLI_INSTALL_CHECK == 'true'
-      # Step 1 - Flyway License Authentication #
-      - name: Flyway Authentication
-        if: ${{ success() && env.FLYWAY_AUTH_DISABLED != 'true' }}
-        run: |
-          flyway auth -IAgreeToTheEula -email="${{ env.FLYWAY_EMAIL }}" -token="${{ env.FLYWAY_TOKEN }}"
-      # Step 2 - Prepare: Detect differences and create deployment script
+      # Step 1 - Prepare: Detect differences and create deployment script
       - name: Flyway CLI - Prepare Scripts
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         run: |
@@ -334,7 +328,7 @@ jobs:
                   echo "Error: The flyway prepare command failed. Exiting script with error."
                   exit 1
                 fi
-        # Step 3 - Creating Changes Report #
+      # Step 2 - Creating Changes Report #
       - name: Flyway CLI - Changes Report
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         run: |
@@ -351,7 +345,7 @@ jobs:
             -workingDirectory="${{ GITHUB.WORKSPACE }}" \
             -reportFilename="${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }}" \
             ${{ env.CUSTOM_PARAMS }}
-      # Step 4 - Publish Check Report
+      # Step 3 - Publish Check Report
       - name: Publish Check Report as Artifact
         if: ${{ env.GENERATE_REPORT == 'true' && success() }}
         uses: actions/upload-artifact@v4
@@ -360,7 +354,7 @@ jobs:
           path: |
             ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.SCRIPT_FILENAME }}
             ${{ GITHUB.WORKSPACE }}/Artifact/${{ env.REPORT_FILENAME }} 
-      # Step 3 - Deploy: Deploy changes to target environment
+      # Step 4 - Deploy: Deploy changes to target environment
       - name: Flyway CLI - Deploy Changes
         if: ${{ env.CHANGES_DETECTED == 'true' && success() }}
         run: |
