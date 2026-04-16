@@ -33,10 +33,6 @@ validateMigrationNaming = true
 sqlserver.clean.mode = "all"
 sqlserver.clean.schemas.exclude = ["ExampleSchema1", "ExampleSchema2"] 
 
-[flyway.check]
-majorTolerance = 0
-
-
 [flywayDesktop]
 developmentEnvironment = "development"
 shadowEnvironment = "shadow"
